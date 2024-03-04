@@ -1,37 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:routine_app/main.dart';
 
 final userIdProvider =
     ChangeNotifierProvider<UserIdModel>((ref) => UserIdModel(userId: ''));
 
 class UserIdModel extends ChangeNotifier {
-  String userId;
+  String userId = '';
   UserIdModel({required this.userId});
 
-  void checkUserId(String id) async {
-    debugPrint('////checking id: $id');
-    try {
-      var data =
-          await supabase.from('users').select('id').eq('token', id).single();
-      debugPrint('////Existing user found');
-      debugPrint('////User id: ${data['id']}');
-      userId = data['id'];
-    } catch (e) {
-      var data = await supabase
-          .from('users')
-          .insert({'token': id})
-          .select('id')
-          .single();
-      debugPrint('////Creating new user');
-      debugPrint('////new user id: ${data['id']}');
-      userId = data['id'];
+  void setUserId(String id) async {
+    DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(id).get();
+    if (userDoc.exists) {
+      debugPrint('/////Existing user: $id');
+    } else {
+      FirebaseFirestore.instance.collection('users').doc(id).set(
+        {
+          "userId": id,
+          "goals": [],
+        },
+      );
     }
-  }
-
-  void setUserId(String id) {
     userId = id;
-    debugPrint('////Updating id: $id');
     notifyListeners();
   }
 }

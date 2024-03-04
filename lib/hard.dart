@@ -15,7 +15,7 @@ class HardPage extends ConsumerWidget {
         final deviceInfo = await deviceInfoPlugin.androidInfo;
         final allInfo = deviceInfo.androidId;
 
-        ref.read(userIdProvider).setUserId(allInfo);
+        // ref.read(userIdProvider).setUserId(allInfo);
       },
     );
     return Scaffold(
