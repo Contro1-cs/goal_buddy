@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/habits/screens/create_new_habit.dart';
 import 'package:routine_app/modules/habits/screens/create_new_huddle.dart';
-import 'package:routine_app/modules/home/screens/no_tasks.dart';
+import 'package:routine_app/modules/home/screens/all_listed_habits.dart';
 import 'package:routine_app/modules/shared/widgets/colors.dart';
+import 'package:routine_app/modules/shared/widgets/transitions.dart';
 import 'package:routine_app/riverpod/riverpod.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -20,6 +20,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   //Variables
   Map<String, dynamic> groups = {};
+  List habitsList = [];
 
   //Functions
   initId() async {
@@ -99,11 +100,20 @@ class _HomePageState extends ConsumerState<HomePage> {
             if (snapshot.data!.exists) {
               Map<String, dynamic> data =
                   snapshot.data!.data() as Map<String, dynamic>;
+              habitsList = data['habits'] ?? [];
 
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
               if (data.isEmpty) {
                 return const CreateNewHuddle();
               }
-              return const HomeScreen();
+              if (habitsList.isEmpty) {
+                return const NoHabitsScreen();
+              }
+              return const AllListedHabits();
             }
             return const Center(
               child: CircularProgressIndicator(),
@@ -122,141 +132,47 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+class NoHabitsScreen extends ConsumerStatefulWidget {
+  const NoHabitsScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<NoHabitsScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<NoHabitsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('huddles')
-            .doc(ref.watch(userIdProvider).userId)
-            .collection('habits')
-            .snapshots(),
-        builder: (context, snapshot) {
-          try {
-            if (snapshot.connectionState == ConnectionState.waiting ||
-                snapshot.hasError) {
-              return const Center(
-                child: CircularProgressIndicator(),
+    return Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'This is your huddle',
+            style: TextStyle(
+              color: CustomColor.white,
+              fontSize: 24,
+            ),
+          ),
+          const Text(
+            'Start by creating new habit',
+            style: TextStyle(
+              color: CustomColor.white,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          IconButton(
+            onPressed: () {
+              rightSlideTransition(
+                context,
+                const CreateNewHabit(),
               );
-            }
-            if (snapshot.hasData) {
-              List<QueryDocumentSnapshot> data = snapshot.data!.docs;
-              return Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'This is your huddle',
-                      style: TextStyle(
-                        color: CustomColor.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                    const Text(
-                      'Start by creating new habit',
-                      style: TextStyle(
-                        color: CustomColor.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SvgPicture.asset("assets/icons/add_circle.svg")
-                  ],
-                ),
-              );
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } catch (e) {
-            return Center(
-              child: Text(
-                e.toString(),
-                style: const TextStyle(color: CustomColor.red),
-              ),
-            );
-          }
-        },
+            },
+            icon: SvgPicture.asset("assets/icons/add_circle.svg"),
+          ),
+        ],
       ),
     );
   }
 }
-
-// Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 20),
-//         child: Column(
-//           children: [
-//             const SizedBox(height: 20),
-
-//             //Goals Tile
-//             Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 const Text(
-//                   'Goals',
-//                   style: TextStyle(
-//                     color: CustomColor.white,
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.w600,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 10),
-//                 Row(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     GoalTile(
-//                       title: 'Weight',
-//                       value: '55',
-//                       label: 'Keep Cumming',
-//                       icon: SvgPicture.asset('assets/icons/weight_scale.svg'),
-//                       background: CustomColor.blue,
-//                     ),
-//                     const SizedBox(width: 10),
-//                     GoalTile(
-//                       title: 'Goal',
-//                       value: '70',
-//                       label: '15Kg left',
-//                       icon: SvgPicture.asset('assets/icons/target.svg'),
-//                       background: CustomColor.green,
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//             Divider(
-//               height: 30,
-//               color: CustomColor.white.withOpacity(0.4),
-//               indent: 50,
-//               endIndent: 50,
-//             ),
-
-//             //Tasks
-//             const Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   'Tasks',
-//                   style: TextStyle(
-//                     color: CustomColor.white,
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.w600,
-//                   ),
-//                 ),
-//                 SizedBox(height: 10),
-//                 HabitTile(),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),

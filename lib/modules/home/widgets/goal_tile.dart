@@ -14,7 +14,7 @@ class GoalTile extends StatelessWidget {
   final String title;
   final String value;
   final String label;
-  final Widget icon;
+  final String icon;
   final Color background;
 
   @override
@@ -42,7 +42,7 @@ class GoalTile extends StatelessWidget {
                   ),
                 ),
                 SvgPicture.asset(
-                  "assets/icons/weight_scale.svg",
+                  icon,
                   height: 20,
                   width: 20,
                   fit: BoxFit.fitHeight,

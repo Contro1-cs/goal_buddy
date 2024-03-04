@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/habits/widget/day_tile.dart';
 import 'package:intl/intl.dart';
 import 'package:routine_app/modules/shared/widgets/colors.dart';
+import 'package:routine_app/modules/shared/widgets/snackbars.dart';
 import 'package:routine_app/riverpod/riverpod.dart';
 
 class CreateNewHabit extends ConsumerStatefulWidget {
@@ -28,12 +29,41 @@ class _CreateNewHabitState extends ConsumerState<CreateNewHabit> {
 
   //Functions
   createNewTask() async {
-    FirebaseFirestore.instance
+    List habitsList = [];
+    DateTime reminder = DateTime(selectedDate.year, selectedDate.month,
+        selectedDate.day, selectedTime.hour, selectedTime.minute);
+    DocumentReference huddleDoc = FirebaseFirestore.instance
         .collection('huddles')
-        .doc(ref.watch(userIdProvider).userId)
-        .update({
-      "name": _nameController.text.trim(),
-    });
+        .doc(ref.watch(userIdProvider).userId);
+
+    DocumentSnapshot snapshot = await huddleDoc.get();
+    if (snapshot.exists) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      habitsList = data['habits'] ?? [];
+    }
+    if (habitsList.isEmpty) {
+      habitsList = [
+        {
+          "name": _nameController.text.trim(),
+          "days": daysBool,
+          "target": reminder,
+        }
+      ];
+    } else {
+      habitsList.add({
+        "name": _nameController.text.trim(),
+        "days": daysBool,
+        "target": reminder,
+      });
+    }
+
+    try {
+      huddleDoc.update({
+        'habits': habitsList,
+      });
+    } catch (e) {
+      errorSnackbar(context, e.toString());
+    }
   }
 
   Future<void> _showTimePicker(BuildContext context) async {
