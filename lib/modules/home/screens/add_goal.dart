@@ -1,61 +1,70 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:routine_app/modules/habits/screens/create_new_habit.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/shared/widgets/colors.dart';
-import 'package:routine_app/modules/shared/widgets/snackbars.dart';
-import 'package:routine_app/modules/shared/widgets/transitions.dart';
 import 'package:routine_app/riverpod/riverpod.dart';
 
-class CreateNewHuddle extends ConsumerStatefulWidget {
-  const CreateNewHuddle({super.key});
+class AddGoal extends ConsumerStatefulWidget {
+  const AddGoal({super.key, this.goalText});
+  final String? goalText;
 
   @override
-  ConsumerState<CreateNewHuddle> createState() => _NoHuddleState();
+  ConsumerState<AddGoal> createState() => _NoHuddleState();
 }
 
-class _NoHuddleState extends ConsumerState<CreateNewHuddle> {
+class _NoHuddleState extends ConsumerState<AddGoal> {
   bool huddleError = false;
   bool _loading = false;
+  int goalLength = 0;
 
   //Controllers
-  TextEditingController _huddleController = TextEditingController();
+  TextEditingController _goalController = TextEditingController();
 
   //Functions
-  createNewHuddle() {
-    setState(() {
-      _loading = true;
-    });
+  createNewGoal() {
     FirebaseFirestore.instance
-        .collection('huddles')
-        .doc(ref.watch(userIdProvider).userId)
-        .set({
-      "name": _huddleController.text.trim(),
-    }).then((value) {
-      rightSlideTransition(
-        context,
-        const CreateNewHabit(),
-      );
-    }).onError(
-      (error, stackTrace) => errorSnackbar(
-        context,
-        error.toString(),
-      ),
+        .collection('users')
+        .doc(ref.read(userIdProvider).userId)
+        .update({
+      "goal": _goalController.text.trim(),
+    }).then(
+      (value) => Navigator.pop(context),
     );
-    setState(() {
-      _loading = false;
-    });
+  }
+
+  @override
+  void initState() {
+    _goalController.text = widget.goalText ?? '';
+    super.initState();
   }
 
   @override
   void dispose() {
-    _huddleController.dispose();
+    _goalController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: CustomColor.black,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: SvgPicture.asset("assets/icons/back_circle.svg"),
+        ),
+        centerTitle: true,
+        title: const Text(
+          'Set a goal',
+          style: TextStyle(
+            color: CustomColor.white,
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -64,14 +73,14 @@ class _NoHuddleState extends ConsumerState<CreateNewHuddle> {
           children: [
             const SizedBox(height: 20),
             const Text(
-              'Your Huddle',
+              'Your goal',
               style: TextStyle(
                 color: CustomColor.white,
                 fontSize: 20,
               ),
             ),
             const Text(
-              'You will be able to share this huddle with your buddies!',
+              'You goal will always be on the top of your screen',
               style: TextStyle(
                 color: Color(0XFF3E637A),
                 fontSize: 10,
@@ -79,13 +88,26 @@ class _NoHuddleState extends ConsumerState<CreateNewHuddle> {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _huddleController,
-              style: const TextStyle(
-                color: CustomColor.white,
-              ),
+              controller: _goalController,
+              maxLength: 100,
+              maxLines: null,
+              onChanged: (value) {
+                setState(() {
+                  goalLength = value.length;
+                });
+              },
+              style: const TextStyle(color: CustomColor.white),
+              autofocus: true,
               decoration: InputDecoration(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                counterStyle: TextStyle(
+                  color: goalLength < 50
+                      ? CustomColor.green
+                      : goalLength < 90
+                          ? CustomColor.yellow
+                          : CustomColor.red,
+                ),
                 hintText: 'Name',
                 focusedBorder: OutlineInputBorder(
                   borderSide: const BorderSide(color: Colors.transparent),
@@ -112,12 +134,12 @@ class _NoHuddleState extends ConsumerState<CreateNewHuddle> {
                     ElevatedButton.styleFrom(backgroundColor: CustomColor.blue),
                 onPressed: () {
                   FocusManager.instance.primaryFocus!.unfocus();
-                  if (_huddleController.text.trim().isEmpty) {
+                  if (_goalController.text.trim().isEmpty) {
                     setState(() {
                       huddleError = true;
                     });
                   } else if (!_loading) {
-                    createNewHuddle();
+                    createNewGoal();
                   }
                 },
                 child: _loading
@@ -127,7 +149,7 @@ class _NoHuddleState extends ConsumerState<CreateNewHuddle> {
                         ),
                       )
                     : const Text(
-                        'Create Your Huddle',
+                        'Set your goal',
                         style: TextStyle(
                           color: CustomColor.white,
                           fontWeight: FontWeight.bold,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/home/widgets/goal_tile.dart';
 import 'package:routine_app/modules/home/widgets/habit_tile.dart';
+import 'package:routine_app/modules/home/widgets/missing_goal_tile.dart';
 import 'package:routine_app/modules/shared/widgets/colors.dart';
 
 class AllListedHabits extends StatefulWidget {
@@ -35,26 +35,7 @@ class _AllListedHabitsState extends State<AllListedHabits> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GoalTile(
-                      title: 'Weight',
-                      value: '55',
-                      label: 'Keep Cumming',
-                      icon: 'assets/icons/weight_scale.svg',
-                      background: CustomColor.blue,
-                    ),
-                    SizedBox(width: 10),
-                    GoalTile(
-                      title: 'Goal',
-                      value: '70',
-                      label: '15Kg left',
-                      icon: 'assets/icons/target.svg',
-                      background: CustomColor.green,
-                    ),
-                  ],
-                ),
+                GoalTile(),
               ],
             ),
             Divider(
