@@ -25,7 +25,9 @@ void rightSlideTransition(
       transitionDuration: const Duration(milliseconds: 500),
     ),
   );
-}void upSlideTransition(
+}
+
+void upSlideTransition(
   BuildContext context,
   Widget page,
 ) {
