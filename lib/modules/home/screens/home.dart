@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/home/widgets/huddle_tile.dart';
-import 'package:routine_app/modules/huddle/screens/huddle_details.dart';
+import 'package:routine_app/modules/huddle/screens/my_huddle_details.dart';
+import 'package:routine_app/modules/huddle/screens/other_huddle_details.dart';
 import 'package:routine_app/modules/search/screens/search_new_huddle.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -110,7 +111,7 @@ class _MyWidgetState extends State<HomePage> {
                         onTap: () {
                           rightSlideTransition(
                             context,
-                            HuddleDetails(id: snapshot.data!.id),
+                            MyHuddleDetails(id: snapshot.data!.id),
                           );
                         },
                       ),
@@ -132,7 +133,7 @@ class _MyWidgetState extends State<HomePage> {
                 ),
                 InkWell(
                   onTap: () {
-                    rightSlideTransition(context, const SearchNewHuddle());
+                    rightSlideTransition(context, SearchNewHuddle());
                   },
                   child: DottedBorder(
                     borderType: BorderType.RRect,
@@ -185,12 +186,13 @@ class _MyWidgetState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return HuddleTile(
                       title: huddles[index]['name'],
-                      count: huddles.length,
+                      count: 15,
                       onTap: () {
                         rightSlideTransition(
                           context,
-                          HuddleDetails(
+                          OtherHuddleDetails(
                             id: huddles[index]['id'],
+                            name: huddles[index]['name'],
                             index: index,
                           ),
                         );

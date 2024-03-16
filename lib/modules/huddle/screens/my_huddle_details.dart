@@ -3,13 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/huddle/screens/create_new_habit.dart';
+import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
+import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
+import 'package:routine_app/shared/widgets/transitions.dart';
 
-class HuddleDetails extends StatefulWidget {
+class MyHuddleDetails extends StatefulWidget {
   final String id;
   final String? name;
   final int? index;
-  const HuddleDetails({
+  const MyHuddleDetails({
     super.key,
     required this.id,
     this.name,
@@ -17,10 +21,10 @@ class HuddleDetails extends StatefulWidget {
   });
 
   @override
-  State<HuddleDetails> createState() => _HuddleDetailsState();
+  State<MyHuddleDetails> createState() => _MyHuddleDetailsState();
 }
 
-class _HuddleDetailsState extends State<HuddleDetails> {
+class _MyHuddleDetailsState extends State<MyHuddleDetails> {
   final TextEditingController _myHuddleController = TextEditingController();
   String uid = FirebaseAuth.instance.currentUser!.uid;
   bool updateName = false;
@@ -64,6 +68,18 @@ class _HuddleDetailsState extends State<HuddleDetails> {
           onPressed: () => Navigator.pop(context),
           icon: SvgPicture.asset("assets/icons/back_circle.svg"),
         ),
+        actions: [
+          Visibility(
+            visible: widget.id == uid,
+            child: IconButton(
+              padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
+              onPressed: () {
+                upSlideTransition(context, const CreateNewHabit());
+              },
+              icon: SvgPicture.asset("assets/icons/plus.svg"),
+            ),
+          ),
+        ],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -71,6 +87,8 @@ class _HuddleDetailsState extends State<HuddleDetails> {
             .doc(widget.id)
             .snapshots(),
         builder: (context, snapshot) {
+          List<HabitModel> habits = [];
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -78,6 +96,15 @@ class _HuddleDetailsState extends State<HuddleDetails> {
           }
           Map data = snapshot.data!.data() as Map;
           _myHuddleController.text = data['name'];
+          for (var e in data['habits']) {
+            habits.add(
+              HabitModel(
+                name: e['name'],
+                timestamp: e['timestamp'],
+                days: e['days'],
+              ),
+            );
+          }
           if (data['name'] != widget.name) {
             changePersonalName(data['name']);
           }
@@ -95,6 +122,7 @@ class _HuddleDetailsState extends State<HuddleDetails> {
                         child: StatefulBuilder(
                           builder: (BuildContext context, setState) {
                             return TextField(
+                              enabled: widget.id == uid,
                               maxLines: null,
                               maxLength: 25,
                               onTap: () {
@@ -155,6 +183,25 @@ class _HuddleDetailsState extends State<HuddleDetails> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: habits.length,
+                    itemBuilder: (context, index) {
+                      String name = habits[index].toJson()['name'];
+                      TimeOfDay time = habits[index].toJson()['time'];
+                      DateTime date = habits[index].toJson()['date'];
+                      List days = habits[index].toJson()['days'];
+                      return HabitTile(
+                        id: widget.id,
+                        index: index,
+                        name: name,
+                        date: date,
+                        time: time,
+                        days: days,
+                      );
+                    },
+                  )
                 ],
               ),
             ),

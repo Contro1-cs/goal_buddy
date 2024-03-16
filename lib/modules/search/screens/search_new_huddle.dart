@@ -27,16 +27,9 @@ class _SearchNewHuddleState extends State<SearchNewHuddle> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Search by id',
-              style: TextStyle(
-                color: CustomColor.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
-            const SizedBox(height: 10),
             TextField(
+              autocorrect: true,
+              autofocus: true,
               style: const TextStyle(
                 color: CustomColor.white,
                 fontSize: 20,
@@ -60,6 +53,19 @@ class _SearchNewHuddleState extends State<SearchNewHuddle> {
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
+                ),
+              ),
+            ),
+            Visibility(
+              child: Expanded(
+                child: Center(
+                  child: Text(
+                    'Search any huddles from around the world',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: CustomColor.white.withOpacity(0.5),
+                    ),
+                  ),
                 ),
               ),
             )

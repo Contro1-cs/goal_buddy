@@ -6,11 +6,13 @@ class HuddleTile extends StatelessWidget {
   final String title;
   final int count;
   final Function()? onTap;
-  const HuddleTile({
+  bool? myHuddle = false;
+  HuddleTile({
     super.key,
     required this.title,
     required this.count,
     this.onTap,
+    this.myHuddle,
   });
 
   @override
