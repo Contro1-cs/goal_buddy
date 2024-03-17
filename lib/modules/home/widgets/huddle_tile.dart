@@ -43,10 +43,15 @@ class HuddleTile extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  SvgPicture.asset(
-                    "assets/icons/people.svg",
-                    height: 14,
-                  ),
+                  myHuddle ?? false
+                      ? SvgPicture.asset(
+                          "assets/icons/people.svg",
+                          height: 14,
+                        )
+                      : SvgPicture.asset(
+                          "assets/icons/target.svg",
+                          height: 14,
+                        ),
                   const SizedBox(width: 5),
                   Text(
                     count.toString(),

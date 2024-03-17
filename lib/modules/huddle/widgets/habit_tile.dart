@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:routine_app/modules/huddle/screens/edit_habit.dart';
 import 'package:routine_app/modules/huddle/widgets/checkbox.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
+import 'package:routine_app/shared/widgets/transitions.dart';
 
 class HabitTile extends StatefulWidget {
   final String id;
@@ -26,15 +27,7 @@ class HabitTile extends StatefulWidget {
   State<HabitTile> createState() => _HabitTileState();
 }
 
-List<String> daysLabel = [
-  'M',
-  'T',
-  'W',
-  'T',
-  'F',
-  'S',
-  'S',
-];
+List<String> daysLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 class _HabitTileState extends State<HabitTile> {
   bool todayTask = false;
@@ -53,13 +46,10 @@ class _HabitTileState extends State<HabitTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
+      onTap: () => rightSlideTransition(
         context,
-        MaterialPageRoute(
-          builder: (context) => EditHabit(
-            id: widget.id,
-            index: widget.index,
-          ),
+        EditHabit(
+          index: widget.index,
         ),
       ),
       child: Container(

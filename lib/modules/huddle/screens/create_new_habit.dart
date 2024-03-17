@@ -14,13 +14,11 @@ class CreateNewHabit extends StatefulWidget {
 }
 
 class _CreateNewHabitState extends State<CreateNewHabit> {
-  String time = '7:00 am';
-  String date = '31 Dec 2024';
   String uid = FirebaseAuth.instance.currentUser!.uid;
 
   TextEditingController _habitName = TextEditingController();
-  TimeOfDay? _selectedTime = TimeOfDay.now();
-  DateTime? _selectedDate = DateTime.now();
+  TimeOfDay? _selectedTime = const TimeOfDay(hour: 7, minute: 0);
+  DateTime? _selectedDate = DateTime(DateTime.now().year, 12, 31);
 
   List<bool> daysBool = [];
 
@@ -51,9 +49,6 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       context: context,
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
-    setState(() {
-      time = timeFormat(_selectedTime);
-    });
   }
 
   datePicker() async {
@@ -62,10 +57,6 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 9999)),
     );
-
-    setState(() {
-      date = DateFormat('dd MMM yyyy').format(_selectedDate ?? DateTime.now());
-    });
   }
 
   Timestamp createTimestamp(DateTime? date, TimeOfDay? time) {
@@ -170,7 +161,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                       timePicker();
                     },
                     child: Text(
-                      time,
+                      timeFormat(_selectedTime),
                       style: const TextStyle(
                         color: CustomColor.white,
                         fontWeight: FontWeight.w500,
@@ -195,7 +186,8 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                       datePicker();
                     },
                     child: Text(
-                      date,
+                      DateFormat('dd MMM yyyy')
+                          .format(_selectedDate ?? DateTime.now()),
                       style: const TextStyle(
                         color: CustomColor.white,
                         fontWeight: FontWeight.w500,

@@ -84,10 +84,7 @@ class _MyWidgetState extends State<HomePage> {
                     );
                   }
                   if (snapshot.hasError) {
-                    return SizedBox(
-                      height: 1,
-                      width: 1,
-                    );
+                    return const SizedBox(height: 1, width: 1);
                   }
                   ;
                   Map data = snapshot.data!.data() as Map;
@@ -106,6 +103,7 @@ class _MyWidgetState extends State<HomePage> {
                       ),
                       const SizedBox(height: 5),
                       HuddleTile(
+                        myHuddle: true,
                         title: data['name'],
                         count: participants.length,
                         onTap: () {
@@ -185,6 +183,7 @@ class _MyWidgetState extends State<HomePage> {
                   itemCount: huddles.length,
                   itemBuilder: (context, index) {
                     return HuddleTile(
+                      myHuddle: false,
                       title: huddles[index]['name'],
                       count: 15,
                       onTap: () {

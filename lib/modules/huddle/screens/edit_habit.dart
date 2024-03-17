@@ -2,16 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:routine_app/shared/widgets/snackbars.dart';
 
 class EditHabit extends StatefulWidget {
-  final String id;
   final int index;
   const EditHabit({
     super.key,
-    required this.id,
     required this.index,
   });
 
@@ -20,17 +19,16 @@ class EditHabit extends StatefulWidget {
 }
 
 class _EditHabitState extends State<EditHabit> {
-  String time = '7:00 am';
-  String date = '31 Dec 2024';
   String uid = FirebaseAuth.instance.currentUser!.uid;
+  late HabitModel habitModel;
 
   TextEditingController _habitName = TextEditingController();
   TimeOfDay? _selectedTime = TimeOfDay.now();
   DateTime? _selectedDate = DateTime.now();
 
-  List<bool> daysBool = [];
+  List daysBool = [];
 
-  List<String> days = [
+  List<String> weekdays = [
     'M',
     'T',
     'W',
@@ -39,11 +37,6 @@ class _EditHabitState extends State<EditHabit> {
     'S',
     'S',
   ];
-  @override
-  void initState() {
-    daysBool = List.generate(days.length, (index) => true);
-    super.initState();
-  }
 
   String timeFormat(TimeOfDay? time) {
     final hours = time!.hourOfPeriod;
@@ -57,9 +50,7 @@ class _EditHabitState extends State<EditHabit> {
       context: context,
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
-    setState(() {
-      time = timeFormat(_selectedTime);
-    });
+    setState(() {});
   }
 
   datePicker() async {
@@ -68,10 +59,7 @@ class _EditHabitState extends State<EditHabit> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 9999)),
     );
-
-    setState(() {
-      date = DateFormat('dd MMM yyyy').format(_selectedDate ?? DateTime.now());
-    });
+    setState(() {});
   }
 
   Timestamp createTimestamp(DateTime? date, TimeOfDay? time) {
@@ -86,15 +74,101 @@ class _EditHabitState extends State<EditHabit> {
     return Timestamp.fromDate(combinedDateTime);
   }
 
-  newHabit() async {
+  deleteHabit() async {
+    DocumentSnapshot userHuddle =
+        await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
+    if (userHuddle.exists) {
+      Map data = userHuddle.data() as Map;
+      List habits = data['habits'] ?? [];
+      habits.removeAt(widget.index);
+      try {
+        FirebaseFirestore.instance
+            .collection('huddles')
+            .doc(uid)
+            .update({'habits': habits}).then((value) => Navigator.pop(context));
+        print('////delete habit');
+      } catch (e) {
+        print('//////${e.toString()}');
+      }
+    }
+  }
+
+  void deletePopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Delete habit?',
+            style: TextStyle(
+              color: CustomColor.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: CustomColor.black),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        deleteHabit();
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: CustomColor.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  changeHabit() async {
     DocumentSnapshot userHuddle =
         await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
     if (userHuddle.exists) {
-      print('////Create new habit');
+      print('////Edit habit');
       Map data = userHuddle.data() as Map;
       List habits = data['habits'] ?? [];
-      habits.add({
+      habits[widget.index] = ({
         'name': _habitName.text.trim(),
         'timestamp': timestamp,
         'days': daysBool,
@@ -110,6 +184,32 @@ class _EditHabitState extends State<EditHabit> {
     }
   }
 
+  fetchHabitDetails() async {
+    DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
+    if (userDoc.exists) {
+      Map data = userDoc.data() as Map;
+      List habits = data['habits'];
+      habitModel = HabitModel(
+        name: habits[widget.index]['name'],
+        timestamp: habits[widget.index]['timestamp'],
+        days: habits[widget.index]['days'],
+      );
+      setState(() {
+        _habitName.text = habitModel.toJson()['name'];
+        _selectedTime = habitModel.toJson()['time'];
+        _selectedDate = habitModel.toJson()['date'];
+        daysBool = habitModel.toJson()['days'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    fetchHabitDetails();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,6 +220,17 @@ class _EditHabitState extends State<EditHabit> {
           onPressed: () => Navigator.pop(context),
           icon: SvgPicture.asset("assets/icons/back_circle.svg"),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              deletePopup(context);
+            },
+            icon: SvgPicture.asset(
+              "assets/icons/delete.svg",
+              height: 20,
+            ),
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -176,7 +287,7 @@ class _EditHabitState extends State<EditHabit> {
                       timePicker();
                     },
                     child: Text(
-                      time,
+                      timeFormat(_selectedTime),
                       style: const TextStyle(
                         color: CustomColor.white,
                         fontWeight: FontWeight.w500,
@@ -201,7 +312,8 @@ class _EditHabitState extends State<EditHabit> {
                       datePicker();
                     },
                     child: Text(
-                      date,
+                      DateFormat('dd MMM yyyy')
+                          .format(_selectedDate ?? DateTime.now()),
                       style: const TextStyle(
                         color: CustomColor.white,
                         fontWeight: FontWeight.w500,
@@ -224,7 +336,7 @@ class _EditHabitState extends State<EditHabit> {
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
-                      itemCount: days.length,
+                      itemCount: weekdays.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
@@ -244,7 +356,7 @@ class _EditHabitState extends State<EditHabit> {
                                   : Colors.transparent,
                             ),
                             child: Text(
-                              days[index],
+                              weekdays[index],
                               style: const TextStyle(color: CustomColor.white),
                             ),
                           ),
@@ -267,18 +379,18 @@ class _EditHabitState extends State<EditHabit> {
                           errorSnackbar(context, 'Name cannot be empty');
                         } else {
                           List<bool> allFalse =
-                              List.generate(days.length, (index) => false);
+                              List.generate(weekdays.length, (index) => false);
 
                           if (daysBool == allFalse) {
                             errorSnackbar(context, 'Select days for habit');
                           } else {
                             FocusManager.instance.primaryFocus!.unfocus();
-                            newHabit();
+                            changeHabit();
                           }
                         }
                       },
                       child: const Text(
-                        'Commit New Habit',
+                        'Update Changes',
                         style: TextStyle(
                           color: CustomColor.white,
                           fontWeight: FontWeight.bold,
