@@ -130,55 +130,70 @@ class _HabitTileState extends State<HabitTile> {
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: daysLabel.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  width: 10,
-                                  decoration: BoxDecoration(
-                                    color: habitColor,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                daysLabel[index],
-                                style: TextStyle(
-                                  color: habitColor,
-                                  fontSize: 8,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                   StatefulBuilder(
-                    builder: (BuildContext context, setState) {
-                      return CustomCheckBox(
-                        onTap: () {
-                          setState(() {
-                            todayTask = !todayTask;
-                          });
-                        },
-                        color: habitColor,
-                        checkColor: secondaryColor,
-                        trigger: todayTask,
+                    builder: (context, setState) {
+                      return Row(
+                        children: [
+                          SizedBox(
+                            height: 50,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              shrinkWrap: true,
+                              itemCount: daysLabel.length,
+                              itemBuilder: (context, index) {
+                                DateTime now = DateTime.now();
+                                int dayIndex = (now.weekday + 6) % 7;
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 3),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                            color: dayIndex == index
+                                                ? todayTask
+                                                    ? habitColor
+                                                    : habitColor
+                                                        .withOpacity(0.1)
+                                                : habitColor.withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        daysLabel[index],
+                                        style: TextStyle(
+                                          color: habitColor,
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          CustomCheckBox(
+                            onTap: () {
+                              setState(() {
+                                todayTask = !todayTask;
+                              });
+                            },
+                            color: habitColor,
+                            checkColor: secondaryColor,
+                            trigger: todayTask,
+                          ),
+                        ],
                       );
                     },
-                  ),
+                  )
                 ],
               ),
             );
