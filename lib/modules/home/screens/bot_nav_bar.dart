@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/home/screens/home.dart';
 import 'package:routine_app/riverpod/riverpod.dart';
-import 'package:routine_app/shared/widgets/custom_colors.dart';
 
 class BotNavBar extends ConsumerStatefulWidget {
   const BotNavBar({super.key});

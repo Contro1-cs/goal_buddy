@@ -86,7 +86,7 @@ class _MyWidgetState extends State<HomePage> {
                   if (snapshot.hasError) {
                     return const SizedBox(height: 1, width: 1);
                   }
-                  ;
+                  
                   Map data = snapshot.data!.data() as Map;
                   List participants = data['participants'] ?? [];
                   return Column(
@@ -109,7 +109,7 @@ class _MyWidgetState extends State<HomePage> {
                         onTap: () {
                           rightSlideTransition(
                             context,
-                            MyHuddleDetails(),
+                            const MyHuddleDetails(),
                           );
                         },
                       ),
@@ -131,7 +131,7 @@ class _MyWidgetState extends State<HomePage> {
                 ),
                 InkWell(
                   onTap: () {
-                    rightSlideTransition(context, SearchNewHuddle());
+                    rightSlideTransition(context, const SearchNewHuddle());
                   },
                   child: DottedBorder(
                     borderType: BorderType.RRect,

@@ -7,13 +7,11 @@ class FirebaseInit {
   init() async {
     try {
       var userData = await FirebaseAuth.instance.signInAnonymously();
-      print("Signed in with temporary account.");
       DocumentSnapshot huddleRef = await FirebaseFirestore.instance
           .collection('huddles')
           .doc(userData.user!.uid)
           .get();
       if (huddleRef.exists) {
-        print("/////User already has huddle");
       } else {
         FirebaseFirestore.instance
             .collection('users')
@@ -31,7 +29,6 @@ class FirebaseInit {
           "name": "Untitled",
           "participants": [],
         });
-        print("/////New huddle created");
       }
     } on FirebaseAuthException catch (e) {
       log("/////error signing in: ${e.message}.");
