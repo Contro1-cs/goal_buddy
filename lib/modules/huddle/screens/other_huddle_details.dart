@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
-import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 
 class OtherHuddleDetails extends StatefulWidget {
@@ -38,7 +36,7 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
         "id": widget.id,
       };
       FirebaseFirestore.instance.collection('users').doc(uid).update(
-          {'huddles': huddles}).then((value) => print('////Name Changed'));
+          {'huddles': huddles});
     }
   }
 
@@ -59,7 +57,6 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
             .doc(widget.id)
             .snapshots(),
         builder: (context, snapshot) {
-          List<HabitModel> habits = [];
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -67,21 +64,11 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
             );
           }
           Map data = snapshot.data!.data() as Map;
-          print('/////${data['name']}');
-          print('/////${widget.name}');
           if (data['name'] != widget.name) {
             changePersonalName(data['name']);
           }
           _myHuddleController.text = data['name'];
-          for (var e in data['habits']) {
-            // habits.add(
-            //   HabitModel(
-            //     name: e['name'],
-            //     timestamp: e['timestamp'],
-            //     days: e['days'],
-            //   ),
-            // );
-          }
+          
 
           return SafeArea(
             child: Padding(

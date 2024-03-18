@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import 'package:routine_app/modules/huddle/screens/edit_habit.dart';
 import 'package:routine_app/modules/huddle/widgets/checkbox.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_colors.dart';

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/huddle/widgets/color_tile.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_colors.dart';
-import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:routine_app/shared/widgets/snackbars.dart';
@@ -23,7 +22,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
   int _selectedColorIndex = 0;
   late Color _selectdColor;
 
-  TextEditingController _habitName = TextEditingController();
+  final TextEditingController _habitName = TextEditingController();
   TimeOfDay? _selectedTime = const TimeOfDay(hour: 7, minute: 00);
   DateTime? _selectedDate = DateTime(DateTime.now().year, 12, 31);
 
@@ -132,7 +131,6 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
 
   newHabit() async {
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
-    print('////new habit');
     DocumentReference docId = await FirebaseFirestore.instance
         .collection('huddles')
         .doc(uid)

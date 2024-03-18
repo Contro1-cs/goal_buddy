@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/huddle/screens/create_new_habit.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
-import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:routine_app/shared/widgets/transitions.dart';
 

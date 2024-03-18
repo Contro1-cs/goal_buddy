@@ -26,7 +26,7 @@ class _EditHabitState extends State<EditHabit> {
   late int _selectedColorIndex;
   late Color _selectdColor;
 
-  TextEditingController _habitName = TextEditingController();
+  final TextEditingController _habitName = TextEditingController();
   TimeOfDay? _selectedTime = TimeOfDay.now();
   DateTime? _selectedDate = DateTime.now();
 
@@ -85,9 +85,8 @@ class _EditHabitState extends State<EditHabit> {
                 .doc(uid)
                 .update({'habits': habits}))
             .then((value) => Navigator.pop(context));
-        print('////delete habit');
       } catch (e) {
-        print('//////${e.toString()}');
+        errorSnackbar(context, 'Something went wrong. Please try again');
       }
     }
   }
@@ -161,7 +160,6 @@ class _EditHabitState extends State<EditHabit> {
 
   changeHabit() async {
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
-    print('////Edit habit');
     FirebaseFirestore.instance
         .collection('huddles')
         .doc(uid)
@@ -210,7 +208,6 @@ class _EditHabitState extends State<EditHabit> {
 
   @override
   Widget build(BuildContext context) {
-    print('/////${Color(habitModel.toJson()['color'])}');
     // print(
     //     '////${habitsColor[_selectedColorIndex].value.toRadixString(16).toUpperCase()}');
     return Scaffold(
