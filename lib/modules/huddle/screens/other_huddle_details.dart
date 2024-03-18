@@ -74,13 +74,13 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
           }
           _myHuddleController.text = data['name'];
           for (var e in data['habits']) {
-            habits.add(
-              HabitModel(
-                name: e['name'],
-                timestamp: e['timestamp'],
-                days: e['days'],
-              ),
-            );
+            // habits.add(
+            //   HabitModel(
+            //     name: e['name'],
+            //     timestamp: e['timestamp'],
+            //     days: e['days'],
+            //   ),
+            // );
           }
 
           return SafeArea(
@@ -142,24 +142,24 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: habits.length,
-                    itemBuilder: (context, index) {
-                      String name = habits[index].toJson()['name'];
-                      TimeOfDay time = habits[index].toJson()['time'];
-                      DateTime date = habits[index].toJson()['date'];
-                      List days = habits[index].toJson()['days'];
-                      return HabitTile(
-                        id: widget.id,
-                        index: index,
-                        name: name,
-                        date: date,
-                        time: time,
-                        days: days,
-                      );
-                    },
-                  )
+                  // ListView.builder(
+                  //   shrinkWrap: true,
+                  //   itemCount: habits.length,
+                  //   itemBuilder: (context, index) {
+                  //     String name = habits[index].toJson()['name'];
+                  //     TimeOfDay time = habits[index].toJson()['time'];
+                  //     DateTime date = habits[index].toJson()['date'];
+                  //     List days = habits[index].toJson()['days'];
+                  //     return HabitTile(
+                  //       id: widget.id,
+                  //       index: index,
+                  //       name: name,
+                  //       date: date,
+                  //       time: time,
+                  //       days: days,
+                  //     );
+                  //   },
+                  // )
                 ],
               ),
             ),

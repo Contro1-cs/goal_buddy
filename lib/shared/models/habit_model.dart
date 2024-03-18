@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 class HabitModel {
   String name;
   Timestamp timestamp;
-  List days;
+  String color;
 
   HabitModel({
     required this.name,
     required this.timestamp,
-    required this.days,
+    required this.color,
   });
 
   Map<String, dynamic> toJson() {
@@ -19,7 +19,7 @@ class HabitModel {
       'name': name,
       'date': date,
       'time': time,
-      'days': days,
+      'color': int.parse('0X$color'),
     };
   }
 }

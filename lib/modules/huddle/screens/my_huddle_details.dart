@@ -10,12 +10,10 @@ import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:routine_app/shared/widgets/transitions.dart';
 
 class MyHuddleDetails extends StatefulWidget {
-  final String id;
   final String? name;
   final int? index;
   const MyHuddleDetails({
     super.key,
-    required this.id,
     this.name,
     this.index,
   });
@@ -29,32 +27,10 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
   String uid = FirebaseAuth.instance.currentUser!.uid;
   bool updateName = false;
 
-  changeName() async {
-    FirebaseFirestore.instance
-        .collection('huddles')
-        .doc(widget.id)
-        .update({"name": _myHuddleController.text.trim()});
-  }
-
-  changePersonalName(String name) async {
-    if (widget.index != null) {
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      Map data = userDoc.data() as Map;
-      List huddles = data['huddles'];
-
-      huddles[widget.index ?? 99] = {
-        "name": name,
-        "id": widget.id,
-      };
-      FirebaseFirestore.instance.collection('users').doc(uid).update(
-          {'huddles': huddles}).then((value) => print('////Name Changed'));
-    }
-  }
+  // changeName() async {}
 
   @override
   void dispose() {
-    changeName();
     super.dispose();
   }
 
@@ -69,45 +45,33 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
           icon: SvgPicture.asset("assets/icons/back_circle.svg"),
         ),
         actions: [
-          Visibility(
-            visible: widget.id == uid,
-            child: IconButton(
-              padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
-              onPressed: () {
-                upSlideTransition(context, const CreateNewHabit());
-              },
-              icon: SvgPicture.asset("assets/icons/plus.svg"),
-            ),
+          IconButton(
+            padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
+            onPressed: () {
+              upSlideTransition(context, const CreateNewHabit());
+            },
+            icon: SvgPicture.asset("assets/icons/plus.svg"),
           ),
         ],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('huddles')
-            .doc(widget.id)
+            .doc(uid)
             .snapshots(),
         builder: (context, snapshot) {
-          List<HabitModel> habits = [];
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.hasError) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
           Map data = snapshot.data!.data() as Map;
-          _myHuddleController.text = data['name'];
-          for (var e in data['habits']) {
-            habits.add(
-              HabitModel(
-                name: e['name'],
-                timestamp: e['timestamp'],
-                days: e['days'],
-              ),
-            );
-          }
-          if (data['name'] != widget.name) {
-            changePersonalName(data['name']);
-          }
+          _myHuddleController.text = data['name'] ?? '';
+          List habitsOrder = [];
+
+          habitsOrder = data['habits'] ?? [];
+
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -122,7 +86,6 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                         child: StatefulBuilder(
                           builder: (BuildContext context, setState) {
                             return TextField(
-                              enabled: widget.id == uid,
                               maxLines: null,
                               maxLength: 25,
                               onTap: () {
@@ -130,7 +93,7 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                                   updateName = true;
                                 });
                               },
-                              onSubmitted: (value) => changeName(),
+                              // onSubmitted: (value) => changeName(),
                               style: const TextStyle(
                                 color: CustomColor.white,
                                 fontSize: 26,
@@ -145,7 +108,7 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                                           HapticFeedback.lightImpact();
                                           FocusManager.instance.primaryFocus!
                                               .unfocus();
-                                          changeName();
+                                          // changeName();
                                           setState(() {
                                             updateName = false;
                                           });
@@ -184,24 +147,21 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: habits.length,
-                    itemBuilder: (context, index) {
-                      String name = habits[index].toJson()['name'];
-                      TimeOfDay time = habits[index].toJson()['time'];
-                      DateTime date = habits[index].toJson()['date'];
-                      List days = habits[index].toJson()['days'];
-                      return HabitTile(
-                        id: widget.id,
-                        index: index,
-                        name: name,
-                        date: date,
-                        time: time,
-                        days: days,
-                      );
-                    },
-                  )
+                  (habitsOrder.isEmpty)
+                      ? const Center(
+                          child: Text(
+                            'No habits found',
+                            style: TextStyle(color: CustomColor.white),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: habitsOrder.length,
+                          itemBuilder: (context, index) {
+                            String id = habitsOrder[index];
+                            return HabitTile(id: id, index: index);
+                          },
+                        ),
                 ],
               ),
             ),

@@ -109,7 +109,7 @@ class _MyWidgetState extends State<HomePage> {
                         onTap: () {
                           rightSlideTransition(
                             context,
-                            MyHuddleDetails(id: snapshot.data!.id),
+                            MyHuddleDetails(),
                           );
                         },
                       ),

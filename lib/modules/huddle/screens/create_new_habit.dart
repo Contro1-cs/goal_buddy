@@ -2,12 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/huddle/widgets/color_tile.dart';
+import 'package:routine_app/modules/huddle/widgets/habit_colors.dart';
+import 'package:routine_app/shared/models/habit_model.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:routine_app/shared/widgets/snackbars.dart';
 
 class CreateNewHabit extends StatefulWidget {
-  const CreateNewHabit({super.key});
+  const CreateNewHabit({
+    super.key,
+  });
 
   @override
   State<CreateNewHabit> createState() => _CreateNewHabitState();
@@ -15,27 +20,12 @@ class CreateNewHabit extends StatefulWidget {
 
 class _CreateNewHabitState extends State<CreateNewHabit> {
   String uid = FirebaseAuth.instance.currentUser!.uid;
+  int _selectedColorIndex = 0;
+  late Color _selectdColor;
 
   TextEditingController _habitName = TextEditingController();
-  TimeOfDay? _selectedTime = const TimeOfDay(hour: 7, minute: 0);
+  TimeOfDay? _selectedTime = const TimeOfDay(hour: 7, minute: 00);
   DateTime? _selectedDate = DateTime(DateTime.now().year, 12, 31);
-
-  List<bool> daysBool = [];
-
-  List<String> days = [
-    'M',
-    'T',
-    'W',
-    'T',
-    'F',
-    'S',
-    'S',
-  ];
-  @override
-  void initState() {
-    daysBool = List.generate(days.length, (index) => true);
-    super.initState();
-  }
 
   String timeFormat(TimeOfDay? time) {
     final hours = time!.hourOfPeriod;
@@ -49,6 +39,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       context: context,
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
+    setState(() {});
   }
 
   datePicker() async {
@@ -57,6 +48,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 9999)),
     );
+    setState(() {});
   }
 
   Timestamp createTimestamp(DateTime? date, TimeOfDay? time) {
@@ -71,32 +63,109 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
     return Timestamp.fromDate(combinedDateTime);
   }
 
+  void deletePopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Delete habit?',
+            style: TextStyle(
+              color: CustomColor.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: CustomColor.black),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        // deleteHabit();
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: CustomColor.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   newHabit() async {
-    DocumentSnapshot userHuddle =
-        await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
-    if (userHuddle.exists) {
-      print('////Create new habit');
-      Map data = userHuddle.data() as Map;
-      List habits = data['habits'] ?? [];
-      habits.add({
-        'name': _habitName.text.trim(),
-        'timestamp': timestamp,
-        'days': daysBool,
-      });
-      try {
-        FirebaseFirestore.instance
-            .collection('huddles')
-            .doc(uid)
-            .update({'habits': habits}).then((value) => Navigator.pop(context));
-      } catch (e) {
-        print('//////${e.toString()}');
-      }
+    print('////new habit');
+    DocumentReference docId = await FirebaseFirestore.instance
+        .collection('huddles')
+        .doc(uid)
+        .collection('habits')
+        .add({
+      'color': habitsColor[_selectedColorIndex]
+          .value
+          .toRadixString(16)
+          .toUpperCase(),
+      'name': _habitName.text.trim(),
+      'timestamp': timestamp,
+    });
+    DocumentSnapshot huddleDoc =
+        await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
+    if (huddleDoc.exists) {
+      Map data = huddleDoc.data() as Map;
+      List habits = data['habits'];
+      habits.add(docId.id);
+      FirebaseFirestore.instance
+          .collection('huddles')
+          .doc(uid)
+          .update({'habits': habits}).then((value) => Navigator.pop(context));
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _selectdColor = habitsColor[_selectedColorIndex];
     return Scaffold(
       appBar: AppBar(
         backgroundColor: CustomColor.black,
@@ -131,7 +200,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                         color: CustomColor.white.withOpacity(0.5),
                       ),
                       filled: true,
-                      fillColor: CustomColor.blue.withOpacity(0.1),
+                      fillColor: _selectdColor.withOpacity(0.2),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 10,
@@ -155,7 +224,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                   const SizedBox(height: 10),
                   TextButton(
                     style: TextButton.styleFrom(
-                      backgroundColor: CustomColor.blue,
+                      backgroundColor: _selectdColor.withOpacity(0.5),
                     ),
                     onPressed: () {
                       timePicker();
@@ -180,7 +249,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                   const SizedBox(height: 10),
                   TextButton(
                     style: TextButton.styleFrom(
-                      backgroundColor: CustomColor.blue,
+                      backgroundColor: _selectdColor.withOpacity(0.5),
                     ),
                     onPressed: () {
                       datePicker();
@@ -196,7 +265,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    'Days',
+                    'Color',
                     style: TextStyle(
                       color: CustomColor.white,
                       fontWeight: FontWeight.bold,
@@ -205,34 +274,22 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
-                    height: 35,
+                    height: 100,
                     width: double.infinity,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: days.length,
+                      itemCount: habitsColor.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
                             setState(() {
-                              daysBool[index] = !daysBool[index];
+                              _selectedColorIndex = index;
+                              _selectdColor = habitsColor[_selectedColorIndex];
                             });
                           },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            height: 35,
-                            width: 35,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              color: daysBool[index]
-                                  ? CustomColor.blue
-                                  : Colors.transparent,
-                            ),
-                            child: Text(
-                              days[index],
-                              style: const TextStyle(color: CustomColor.white),
-                            ),
+                          child: ColorTile(
+                            color: habitsColor[index],
+                            trigger: _selectedColorIndex == index,
                           ),
                         );
                       },
@@ -244,34 +301,33 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          backgroundColor: CustomColor.green),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: _selectdColor,
+                      ),
                       onPressed: () {
                         if (_habitName.text.trim().isEmpty) {
                           errorSnackbar(context, 'Name cannot be empty');
                         } else {
-                          List<bool> allFalse =
-                              List.generate(days.length, (index) => false);
-
-                          if (daysBool == allFalse) {
-                            errorSnackbar(context, 'Select days for habit');
-                          } else {
+                          if (_habitName.text.trim().isNotEmpty) {
                             FocusManager.instance.primaryFocus!.unfocus();
                             newHabit();
                           }
                         }
                       },
-                      child: const Text(
+                      child: Text(
                         'Commit New Habit',
                         style: TextStyle(
-                          color: CustomColor.white,
+                          color: _selectedColorIndex == 3
+                              ? CustomColor.black
+                              : CustomColor.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
