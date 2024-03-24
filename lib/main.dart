@@ -12,6 +12,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseInit().init();
+  FirebaseInit().initFcmToken();
   runApp(
     const ProviderScope(
       child: MyApp(),

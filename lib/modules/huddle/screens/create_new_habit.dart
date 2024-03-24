@@ -21,6 +21,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
   String uid = FirebaseAuth.instance.currentUser!.uid;
   int _selectedColorIndex = 0;
   late Color _selectdColor;
+  bool _loading = false;
 
   final TextEditingController _habitName = TextEditingController();
   TimeOfDay? _selectedTime = const TimeOfDay(hour: 7, minute: 00);
@@ -34,11 +35,13 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
   }
 
   timePicker() async {
-    _selectedTime = await showTimePicker(
+    TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
-    setState(() {});
+    if (timeOfDay != null) {
+      _selectedTime = timeOfDay;
+    }
   }
 
   datePicker() async {
@@ -130,6 +133,9 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
   }
 
   newHabit() async {
+    setState(() {
+      _loading = true;
+    });
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
     DocumentReference docId = await FirebaseFirestore.instance
         .collection('huddles')
@@ -145,8 +151,21 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
     });
     DocumentSnapshot huddleDoc =
         await FirebaseFirestore.instance.collection('huddles').doc(uid).get();
+
     if (huddleDoc.exists) {
+      //Add empty list to all the users profile
       Map data = huddleDoc.data() as Map;
+      List allFalse = List.generate(7, (index) => false);
+      List participants = data['participants'];
+      for (var member in participants) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(member)
+            .collection('habits')
+            .doc(docId.id)
+            .set({"week": allFalse});
+      }
+      //Add doc id to the list
       List habits = data['habits'];
       habits.add(docId.id);
       FirebaseFirestore.instance
@@ -154,6 +173,9 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
           .doc(uid)
           .update({'habits': habits}).then((value) => Navigator.pop(context));
     }
+    setState(() {
+      _loading = false;
+    });
   }
 
   @override
@@ -305,24 +327,30 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                         backgroundColor: _selectdColor,
                       ),
                       onPressed: () {
-                        if (_habitName.text.trim().isEmpty) {
-                          errorSnackbar(context, 'Name cannot be empty');
-                        } else {
-                          if (_habitName.text.trim().isNotEmpty) {
-                            FocusManager.instance.primaryFocus!.unfocus();
-                            newHabit();
+                        if (!_loading) {
+                          if (_habitName.text.trim().isEmpty) {
+                            errorSnackbar(context, 'Name cannot be empty');
+                          } else {
+                            if (_habitName.text.trim().isNotEmpty) {
+                              FocusManager.instance.primaryFocus!.unfocus();
+                              newHabit();
+                            }
                           }
                         }
                       },
-                      child: Text(
-                        'Commit New Habit',
-                        style: TextStyle(
-                          color: _selectedColorIndex == 3
-                              ? CustomColor.black
-                              : CustomColor.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _loading
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text(
+                              'Commit New Habit',
+                              style: TextStyle(
+                                color: _selectedColorIndex == 3
+                                    ? CustomColor.black
+                                    : CustomColor.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 20),

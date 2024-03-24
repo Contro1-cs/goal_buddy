@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +13,12 @@ import 'package:routine_app/shared/widgets/transitions.dart';
 
 class HabitTile extends StatefulWidget {
   final String id;
+  final String uid;
   final int index;
   const HabitTile({
     super.key,
     required this.id,
+    required this.uid,
     required this.index,
   });
 
@@ -26,6 +30,7 @@ List<String> daysLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 class _HabitTileState extends State<HabitTile> {
   bool todayTask = false;
+  List weekView = List.generate(7, (index) => false);
 
   String timeFormat(TimeOfDay? time) {
     final hours = time!.hourOfPeriod;
@@ -41,6 +46,31 @@ class _HabitTileState extends State<HabitTile> {
     } else {
       return '${(difference / 365.26).toStringAsFixed(1)}y';
     }
+  }
+
+  fetchWeekView() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .collection('habits')
+        .doc(widget.id)
+        .get();
+    if (userDoc.exists) {
+      Map data = userDoc.data() as Map;
+
+      DateTime now = DateTime.now();
+      int dayIndex = (now.weekday + 6) % 7;
+      setState(() {
+        weekView = data['week'];
+        todayTask = weekView[dayIndex];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWeekView();
   }
 
   @override
@@ -108,9 +138,10 @@ class _HabitTileState extends State<HabitTile> {
                             Text(
                               timeFormat(habitModel.toJson()['time']),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: CustomColor.white,
-                                  fontSize: 10),
+                                fontWeight: FontWeight.w500,
+                                color: CustomColor.white,
+                                fontSize: 10,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             SvgPicture.asset(
@@ -144,6 +175,12 @@ class _HabitTileState extends State<HabitTile> {
                                 DateTime now = DateTime.now();
                                 int dayIndex = (now.weekday + 6) % 7;
 
+                                Color tileColor = habitColor.withOpacity(0.2);
+                                if ((index == dayIndex && todayTask) ||
+                                    (index < dayIndex && weekView[index])) {
+                                  tileColor = habitColor;
+                                }
+
                                 return Padding(
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 3),
@@ -156,12 +193,7 @@ class _HabitTileState extends State<HabitTile> {
                                         child: Container(
                                           width: 10,
                                           decoration: BoxDecoration(
-                                            color: dayIndex == index
-                                                ? todayTask
-                                                    ? habitColor
-                                                    : habitColor
-                                                        .withOpacity(0.1)
-                                                : habitColor.withOpacity(0.1),
+                                            color: tileColor,
                                             borderRadius:
                                                 BorderRadius.circular(100),
                                           ),
