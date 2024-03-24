@@ -27,7 +27,6 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
   bool updateName = false;
   List habits = [];
 
-  // changeName() async {}
 
   @override
   void dispose() {

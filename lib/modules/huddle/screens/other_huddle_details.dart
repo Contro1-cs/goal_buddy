@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
+import 'package:routine_app/shared/widgets/snackbars.dart';
 
 class OtherHuddleDetails extends StatefulWidget {
   final String id;
@@ -43,6 +44,87 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
     }
   }
 
+  leaveHuddle() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    Map data = userDoc.data() as Map;
+    List huddles = data['huddles'];
+    huddles.removeWhere((element) => element['id'] == widget.id);
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .update({"huddles": huddles}).then((value) => Navigator.pop(context));
+  }
+
+  void leveeHuddlePopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Leave this huddle?',
+            style: TextStyle(
+              color: CustomColor.black,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: CustomColor.black),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        leaveHuddle();
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'Leave',
+                        style: TextStyle(color: CustomColor.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +135,17 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
           onPressed: () => Navigator.pop(context),
           icon: SvgPicture.asset("assets/icons/back_circle.svg"),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              leveeHuddlePopup(context);
+            },
+            icon: SvgPicture.asset(
+              "assets/icons/logout.svg",
+              height: 20,
+            ),
+          ),
+        ],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
