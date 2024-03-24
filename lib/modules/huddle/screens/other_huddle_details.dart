@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 
 class OtherHuddleDetails extends StatefulWidget {
@@ -21,10 +22,10 @@ class OtherHuddleDetails extends StatefulWidget {
 
 class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
   final TextEditingController _myHuddleController = TextEditingController();
-  String uid = FirebaseAuth.instance.currentUser!.uid;
   bool updateName = false;
 
   changePersonalName(String name) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
     if (widget.index != null) {
       DocumentSnapshot userDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -35,8 +36,10 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
         "name": name,
         "id": widget.id,
       };
-      FirebaseFirestore.instance.collection('users').doc(uid).update(
-          {'huddles': huddles});
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update({'huddles': huddles});
     }
   }
 
@@ -57,7 +60,6 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
             .doc(widget.id)
             .snapshots(),
         builder: (context, snapshot) {
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -68,7 +70,8 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
             changePersonalName(data['name']);
           }
           _myHuddleController.text = data['name'];
-          
+          List habits = data['habits'];
+          String ownerId = data['owner'];
 
           return SafeArea(
             child: Padding(
@@ -129,24 +132,23 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // ListView.builder(
-                  //   shrinkWrap: true,
-                  //   itemCount: habits.length,
-                  //   itemBuilder: (context, index) {
-                  //     String name = habits[index].toJson()['name'];
-                  //     TimeOfDay time = habits[index].toJson()['time'];
-                  //     DateTime date = habits[index].toJson()['date'];
-                  //     List days = habits[index].toJson()['days'];
-                  //     return HabitTile(
-                  //       id: widget.id,
-                  //       index: index,
-                  //       name: name,
-                  //       date: date,
-                  //       time: time,
-                  //       days: days,
-                  //     );
-                  //   },
-                  // )
+                  Expanded(
+                    child: habits.isEmpty
+                        ? const Center(
+                            child: Text('No habits found'),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: habits.length,
+                            itemBuilder: (context, index) {
+                              return HabitTile(
+                                id: habits[index],
+                                uid: ownerId,
+                                index: index,
+                              );
+                            },
+                          ),
+                  ),
                 ],
               ),
             ),

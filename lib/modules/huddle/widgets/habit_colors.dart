@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 List<Color> habitsColor = [
-  const Color(0XFFFF1744),
   const Color(0XFF45AAFF),
+  const Color(0XFFFF1744),
   const Color(0XFF16DB65),
   const Color(0XFFFAFF70),
   const Color(0XFF00B4D8),
@@ -14,8 +14,8 @@ List<Color> habitsColor = [
   const Color(0XFF1F487E),
 ];
 List<Color> habitTickColor = [
-  const Color(0XFF3B0711),
   const Color(0XFF1B4366),
+  const Color(0XFF3B0711),
   const Color(0XFF08421F),
   const Color(0XFF424319),
   const Color(0XFF003742),

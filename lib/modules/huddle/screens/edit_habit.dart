@@ -27,30 +27,36 @@ class _EditHabitState extends State<EditHabit> {
   late Color _selectdColor;
 
   final TextEditingController _habitName = TextEditingController();
-  TimeOfDay? _selectedTime = TimeOfDay.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   DateTime? _selectedDate = DateTime.now();
 
-  String timeFormat(TimeOfDay? time) {
-    final hours = time!.hourOfPeriod;
+  String timeFormat(TimeOfDay time) {
+    final hours = time.hourOfPeriod;
     final minutes = '${time.minute}'.padLeft(2, '0');
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
     return '$hours:$minutes $period';
   }
 
   timePicker() async {
-    _selectedTime = await showTimePicker(
+    TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
+    if (timeOfDay != null) {
+      _selectedTime = timeOfDay;
+    }
     setState(() {});
   }
 
   datePicker() async {
-    _selectedDate = await showDatePicker(
+    DateTime? dateTime = await showDatePicker(
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 9999)),
     );
+    if (dateTime != null) {
+      _selectedDate = dateTime;
+    }
     setState(() {});
   }
 

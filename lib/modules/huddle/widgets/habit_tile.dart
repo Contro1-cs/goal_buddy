@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +13,12 @@ import 'package:routine_app/shared/widgets/transitions.dart';
 
 class HabitTile extends StatefulWidget {
   final String id;
+  final String uid;
   final int index;
   const HabitTile({
     super.key,
     required this.id,
+    required this.uid,
     required this.index,
   });
 
@@ -26,6 +30,7 @@ List<String> daysLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 class _HabitTileState extends State<HabitTile> {
   bool todayTask = false;
+  List weekView = List.generate(7, (index) => false);
 
   String timeFormat(TimeOfDay? time) {
     final hours = time!.hourOfPeriod;
@@ -43,20 +48,48 @@ class _HabitTileState extends State<HabitTile> {
     }
   }
 
+  fetchWeekView() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .collection('habits')
+        .doc(widget.id)
+        .get();
+    if (userDoc.exists) {
+      Map data = userDoc.data() as Map;
+
+      DateTime now = DateTime.now();
+      int dayIndex = (now.weekday + 6) % 7;
+      setState(() {
+        weekView = data['week'];
+        todayTask = weekView[dayIndex];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWeekView();
+  }
+
   @override
   Widget build(BuildContext context) {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
     return GestureDetector(
-      onTap: () => rightSlideTransition(
-        context,
-        EditHabit(
-          id: widget.id,
-        ),
-      ),
+      onTap: () {
+        if (widget.uid == FirebaseAuth.instance.currentUser!.uid) {
+          rightSlideTransition(
+            context,
+            EditHabit(
+              id: widget.id,
+            ),
+          );
+        }
+      },
       child: StreamBuilder(
           stream: FirebaseFirestore.instance
               .collection('huddles')
-              .doc(uid)
+              .doc(widget.uid)
               .collection('habits')
               .doc(widget.id)
               .snapshots(),
@@ -108,9 +141,10 @@ class _HabitTileState extends State<HabitTile> {
                             Text(
                               timeFormat(habitModel.toJson()['time']),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: CustomColor.white,
-                                  fontSize: 10),
+                                fontWeight: FontWeight.w500,
+                                color: CustomColor.white,
+                                fontSize: 10,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             SvgPicture.asset(
@@ -130,55 +164,71 @@ class _HabitTileState extends State<HabitTile> {
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: daysLabel.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  width: 10,
-                                  decoration: BoxDecoration(
-                                    color: habitColor,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                daysLabel[index],
-                                style: TextStyle(
-                                  color: habitColor,
-                                  fontSize: 8,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                   StatefulBuilder(
-                    builder: (BuildContext context, setState) {
-                      return CustomCheckBox(
-                        onTap: () {
-                          setState(() {
-                            todayTask = !todayTask;
-                          });
-                        },
-                        color: habitColor,
-                        checkColor: secondaryColor,
-                        trigger: todayTask,
+                    builder: (context, setState) {
+                      return Row(
+                        children: [
+                          SizedBox(
+                            height: 50,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              shrinkWrap: true,
+                              itemCount: daysLabel.length,
+                              itemBuilder: (context, index) {
+                                DateTime now = DateTime.now();
+                                int dayIndex = (now.weekday + 6) % 7;
+
+                                Color tileColor = habitColor.withOpacity(0.2);
+                                if ((index == dayIndex && todayTask) ||
+                                    (index < dayIndex && weekView[index])) {
+                                  tileColor = habitColor;
+                                }
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 3),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                            color: tileColor,
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        daysLabel[index],
+                                        style: TextStyle(
+                                          color: habitColor,
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          CustomCheckBox(
+                            onTap: () {
+                              setState(() {
+                                todayTask = !todayTask;
+                              });
+                            },
+                            color: habitColor,
+                            checkColor: secondaryColor,
+                            trigger: todayTask,
+                          ),
+                        ],
                       );
                     },
-                  ),
+                  )
                 ],
               ),
             );
