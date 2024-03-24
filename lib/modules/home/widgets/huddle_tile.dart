@@ -4,15 +4,15 @@ import 'package:routine_app/shared/widgets/custom_colors.dart';
 
 class HuddleTile extends StatelessWidget {
   final String title;
-  final int count;
+  final String? personCount;
+  final String? targetCount;
   final Function()? onTap;
-  bool? myHuddle = false;
   HuddleTile({
     super.key,
     required this.title,
-    required this.count,
+    this.personCount,
+    this.targetCount,
     this.onTap,
-    this.myHuddle,
   });
 
   @override
@@ -35,31 +35,60 @@ class HuddleTile extends StatelessWidget {
               title,
               style: const TextStyle(color: CustomColor.blue, fontSize: 16),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: CustomColor.blue,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  myHuddle ?? false
-                      ? SvgPicture.asset(
+            Row(
+              children: [
+                Visibility(
+                  visible: personCount != null,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: CustomColor.blue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
                           "assets/icons/people.svg",
                           height: 14,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          personCount.toString(),
+                          style: const TextStyle(
+                              color: CustomColor.white, fontSize: 14),
                         )
-                      : SvgPicture.asset(
+                      ],
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: targetCount != null,
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: CustomColor.blue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
                           "assets/icons/target.svg",
                           height: 14,
                         ),
-                  const SizedBox(width: 5),
-                  Text(
-                    count.toString(),
-                    style:
-                        const TextStyle(color: CustomColor.white, fontSize: 14),
-                  )
-                ],
-              ),
+                        const SizedBox(width: 5),
+                        Text(
+                          targetCount.toString(),
+                          style: const TextStyle(
+                              color: CustomColor.white, fontSize: 14),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -86,7 +86,7 @@ class _MyWidgetState extends State<HomePage> {
                   if (snapshot.hasError) {
                     return const SizedBox(height: 1, width: 1);
                   }
-                  
+
                   Map data = snapshot.data!.data() as Map;
                   List participants = data['participants'] ?? [];
                   return Column(
@@ -103,9 +103,8 @@ class _MyWidgetState extends State<HomePage> {
                       ),
                       const SizedBox(height: 5),
                       HuddleTile(
-                        myHuddle: true,
                         title: data['name'],
-                        count: participants.length,
+                        personCount: participants.length.toString(),
                         onTap: () {
                           rightSlideTransition(
                             context,
@@ -183,9 +182,8 @@ class _MyWidgetState extends State<HomePage> {
                   itemCount: huddles.length,
                   itemBuilder: (context, index) {
                     return HuddleTile(
-                      myHuddle: false,
                       title: huddles[index]['name'],
-                      count: 15,
+                      targetCount: '12',
                       onTap: () {
                         rightSlideTransition(
                           context,
