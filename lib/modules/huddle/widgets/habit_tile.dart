@@ -75,18 +75,21 @@ class _HabitTileState extends State<HabitTile> {
 
   @override
   Widget build(BuildContext context) {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
     return GestureDetector(
-      onTap: () => rightSlideTransition(
-        context,
-        EditHabit(
-          id: widget.id,
-        ),
-      ),
+      onTap: () {
+        if (widget.uid == FirebaseAuth.instance.currentUser!.uid) {
+          rightSlideTransition(
+            context,
+            EditHabit(
+              id: widget.id,
+            ),
+          );
+        }
+      },
       child: StreamBuilder(
           stream: FirebaseFirestore.instance
               .collection('huddles')
-              .doc(uid)
+              .doc(widget.uid)
               .collection('habits')
               .doc(widget.id)
               .snapshots(),

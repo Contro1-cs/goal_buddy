@@ -139,7 +139,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
     Timestamp timestamp = createTimestamp(_selectedDate, _selectedTime);
     DocumentReference docId = await FirebaseFirestore.instance
         .collection('huddles')
-        .doc(uid)
+        .doc("5XRUYGbNiReMPSzu4qh9dSWv72J2")
         .collection('habits')
         .add({
       'color': habitsColor[_selectedColorIndex]
@@ -170,7 +170,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       habits.add(docId.id);
       FirebaseFirestore.instance
           .collection('huddles')
-          .doc(uid)
+          .doc("5XRUYGbNiReMPSzu4qh9dSWv72J2")
           .update({'habits': habits}).then((value) => Navigator.pop(context));
     }
     setState(() {
