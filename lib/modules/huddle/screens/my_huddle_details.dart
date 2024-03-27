@@ -27,7 +27,6 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
   bool updateName = false;
   List habits = [];
 
-
   @override
   void dispose() {
     super.dispose();
@@ -83,7 +82,7 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                 }
                 Map data = snapshot.data!.data() as Map;
                 _myHuddleController.text = data['name'];
-                habits = data['habits'];
+                habits = data['habits'] ?? [];
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -158,8 +157,13 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                     ),
                     Expanded(
                       child: habits.isEmpty
-                          ? Container(
-                              color: CustomColor.red,
+                          ? Center(
+                              child: Text(
+                                'No habits found',
+                                style: TextStyle(
+                                  color: CustomColor.white.withOpacity(0.5),
+                                ),
+                              ),
                             )
                           : ListView.builder(
                               shrinkWrap: true,
@@ -167,15 +171,9 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                               itemBuilder: (context, index) {
                                 return HabitTile(
                                   id: habits[index],
-                                  uid: uid ,
+                                  uid: uid,
                                   index: index,
                                 );
-                                // return ListTile(
-                                //   title: Text(
-                                //     habits[index],
-                                //     style: TextStyle(color: CustomColor.white),
-                                //   ),
-                                // );
                               },
                             ),
                     )

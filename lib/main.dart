@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:routine_app/modules/home/screens/bot_nav_bar.dart';
+import 'package:routine_app/modules/home/screens/home.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
 import 'package:routine_app/utils/fierbase_init.dart';
 
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const BotNavBar(),
+      home: const HomePage(),
     );
   }
 }

@@ -125,7 +125,7 @@ class _SearchNewHuddleState extends State<SearchNewHuddle> {
               child: Expanded(
                 child: Center(
                   child: Text(
-                    "No huddle by name - '${_searchHuddleName.text.trim()}'",
+                    "No huddle by the name - '${_searchHuddleName.text.trim()}'",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: CustomColor.white.withOpacity(0.5),

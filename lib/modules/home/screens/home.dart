@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/home/screens/settings.dart';
 import 'package:routine_app/modules/home/widgets/huddle_tile.dart';
 import 'package:routine_app/modules/huddle/screens/my_huddle_details.dart';
 import 'package:routine_app/modules/huddle/screens/other_huddle_details.dart';
@@ -46,6 +47,18 @@ class _MyWidgetState extends State<HomePage> {
             ),
           ],
         ),
+        leading: const SizedBox(),
+        actions: [
+          IconButton(
+            onPressed: () {
+              upSlideTransition(context, const SettingsPage());
+            },
+            icon: SvgPicture.asset(
+              "assets/icons/settings.svg",
+              height: 20,
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 2),
