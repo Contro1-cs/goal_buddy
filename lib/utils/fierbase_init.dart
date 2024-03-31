@@ -28,7 +28,7 @@ class FirebaseInit {
             .set({
           "owner": userData.user!.uid,
           "name": "Untitled",
-          "participants": [],
+          "participants": [userData.user!.uid],
         });
       }
     } on FirebaseAuthException catch (e) {

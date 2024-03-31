@@ -156,7 +156,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
       //Add empty list to all the users profile
       Map data = huddleDoc.data() as Map;
       List allFalse = List.generate(7, (index) => false);
-      List participants = data['participants'];
+      List participants = data['participants'] ?? [];
       for (var member in participants) {
         FirebaseFirestore.instance
             .collection('users')
@@ -166,7 +166,7 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
             .set({"week": allFalse});
       }
       //Add doc id to the list
-      List habits = data['habits'];
+      List habits = data['habits'] ?? [];
       habits.add(docId.id);
       FirebaseFirestore.instance
           .collection('huddles')
@@ -339,8 +339,10 @@ class _CreateNewHabitState extends State<CreateNewHabit> {
                         }
                       },
                       child: _loading
-                          ? const Center(
-                              child: CircularProgressIndicator(),
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                color: habitTickColor[_selectedColorIndex],
+                              ),
                             )
                           : Text(
                               'Commit New Habit',

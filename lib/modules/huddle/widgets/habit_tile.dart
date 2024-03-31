@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +12,10 @@ import 'package:routine_app/shared/widgets/transitions.dart';
 class HabitTile extends StatefulWidget {
   final String id;
   final String uid;
-  final int index;
   const HabitTile({
     super.key,
     required this.id,
     required this.uid,
-    required this.index,
   });
 
   @override
@@ -48,6 +44,29 @@ class _HabitTileState extends State<HabitTile> {
     }
   }
 
+  markTodayTask(bool value) async {
+    DateTime now = DateTime.now();
+    int dayIndex = (now.weekday + 6) % 7;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .collection('habits')
+        .doc(widget.id)
+        .get();
+    if (userDoc.exists) {
+      Map data = userDoc.data() as Map;
+      weekView = data['week'];
+    }
+
+    weekView[dayIndex] = value;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .collection('habits')
+        .doc(widget.id)
+        .set({'week': weekView});
+  }
+
   fetchWeekView() async {
     DocumentSnapshot userDoc = await FirebaseFirestore.instance
         .collection('users')
@@ -57,13 +76,21 @@ class _HabitTileState extends State<HabitTile> {
         .get();
     if (userDoc.exists) {
       Map data = userDoc.data() as Map;
-
       DateTime now = DateTime.now();
       int dayIndex = (now.weekday + 6) % 7;
-      setState(() {
-        weekView = data['week'];
-        todayTask = weekView[dayIndex];
-      });
+      if (dayIndex < weekView.lastIndexOf(true)) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.uid)
+            .collection('habits')
+            .doc(widget.id)
+            .set({"week": weekView});
+      } else {
+        setState(() {
+          weekView = data['week'];
+          todayTask = weekView[dayIndex];
+        });
+      }
     }
   }
 
@@ -220,6 +247,7 @@ class _HabitTileState extends State<HabitTile> {
                               setState(() {
                                 todayTask = !todayTask;
                               });
+                              markTodayTask(todayTask);
                             },
                             color: habitColor,
                             checkColor: secondaryColor,

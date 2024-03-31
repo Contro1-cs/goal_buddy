@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_tile.dart';
 import 'package:routine_app/shared/widgets/custom_colors.dart';
-import 'package:routine_app/shared/widgets/snackbars.dart';
 
 class OtherHuddleDetails extends StatefulWidget {
   final String id;
@@ -237,7 +236,6 @@ class _OtherHuddleDetailsState extends State<OtherHuddleDetails> {
                               return HabitTile(
                                 id: habits[index],
                                 uid: ownerId,
-                                index: index,
                               );
                             },
                           ),

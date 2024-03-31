@@ -27,6 +27,13 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
   bool updateName = false;
   List habits = [];
 
+  changeName() {
+    FirebaseFirestore.instance
+        .collection('huddles')
+        .doc(uid)
+        .update({"name": _myHuddleController.text.trim()});
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -115,12 +122,17 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                                       ? IconButton(
                                           onPressed: () {
                                             HapticFeedback.lightImpact();
-                                            FocusManager.instance.primaryFocus!
-                                                .unfocus();
-                                            // changeName();
-                                            setState(() {
-                                              updateName = false;
-                                            });
+                                            if (_myHuddleController.text
+                                                .trim()
+                                                .isNotEmpty) {
+                                              changeName();
+                                              setState(() {
+                                                updateName = false;
+                                              });
+                                              FocusManager
+                                                  .instance.primaryFocus!
+                                                  .unfocus();
+                                            }
                                           },
                                           icon: SvgPicture.asset(
                                             "assets/icons/check_circle.svg",
@@ -155,6 +167,7 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 16),
                     Expanded(
                       child: habits.isEmpty
                           ? Center(
@@ -172,7 +185,6 @@ class _MyHuddleDetailsState extends State<MyHuddleDetails> {
                                 return HabitTile(
                                   id: habits[index],
                                   uid: uid,
-                                  index: index,
                                 );
                               },
                             ),

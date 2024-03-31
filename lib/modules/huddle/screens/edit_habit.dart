@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:routine_app/modules/huddle/widgets/checkbox.dart';
 import 'package:routine_app/modules/huddle/widgets/color_tile.dart';
 import 'package:routine_app/modules/huddle/widgets/habit_colors.dart';
 import 'package:routine_app/shared/models/habit_model.dart';
@@ -23,8 +24,8 @@ class EditHabit extends StatefulWidget {
 class _EditHabitState extends State<EditHabit> {
   String uid = FirebaseAuth.instance.currentUser!.uid;
   late HabitModel habitModel;
-  late int _selectedColorIndex;
-  late Color _selectdColor;
+  int _selectedColorIndex = 0;
+  Color _selectdColor = habitsColor[0];
 
   final TextEditingController _habitName = TextEditingController();
   TimeOfDay _selectedTime = TimeOfDay.now();
@@ -40,6 +41,20 @@ class _EditHabitState extends State<EditHabit> {
   timePicker() async {
     TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
+      builder: (context, child) => Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: CustomColor.blue,
+          ),
+          // button colors
+          buttonTheme: const ButtonThemeData(
+            colorScheme: ColorScheme.light(
+              primary: CustomColor.white,
+            ),
+          ),
+        ),
+        child: child ?? const SizedBox(),
+      ),
       initialTime: const TimeOfDay(hour: 7, minute: 0),
     );
     if (timeOfDay != null) {
@@ -50,6 +65,20 @@ class _EditHabitState extends State<EditHabit> {
 
   datePicker() async {
     DateTime? dateTime = await showDatePicker(
+      builder: (context, child) => Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: CustomColor.blue,
+          ),
+          // button colors
+          buttonTheme: const ButtonThemeData(
+            colorScheme: ColorScheme.light(
+              primary: CustomColor.white,
+            ),
+          ),
+        ),
+        child: child ?? const SizedBox(),
+      ),
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 9999)),

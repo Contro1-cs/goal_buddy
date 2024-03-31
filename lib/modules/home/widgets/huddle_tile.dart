@@ -7,7 +7,7 @@ class HuddleTile extends StatelessWidget {
   final String? personCount;
   final String? targetCount;
   final Function()? onTap;
-  HuddleTile({
+  const HuddleTile({
     super.key,
     required this.title,
     this.personCount,
