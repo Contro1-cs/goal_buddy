@@ -190,26 +190,37 @@ class _MyWidgetState extends State<HomePage> {
                 }
                 Map data = snapshot.data!.data() as Map;
                 List huddles = data['huddles'];
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: huddles.length,
-                  itemBuilder: (context, index) {
-                    return HuddleTile(
-                      title: huddles[index]['name'],
-                      targetCount: '12',
-                      onTap: () {
-                        rightSlideTransition(
-                          context,
-                          OtherHuddleDetails(
-                            id: huddles[index]['id'],
-                            name: huddles[index]['name'],
-                            index: index,
+                return huddles.isEmpty
+                    ? Expanded(
+                        child: Center(
+                          child: Text(
+                            'No Huddles joined',
+                            style: TextStyle(
+                              color: CustomColor.white.withOpacity(0.5),
+                            ),
                           ),
-                        );
-                      },
-                    );
-                  },
-                );
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: huddles.length,
+                        itemBuilder: (context, index) {
+                          return HuddleTile(
+                            title: huddles[index]['name'],
+                            targetCount: '12',
+                            onTap: () {
+                              rightSlideTransition(
+                                context,
+                                OtherHuddleDetails(
+                                  id: huddles[index]['id'],
+                                  name: huddles[index]['name'],
+                                  index: index,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
               },
             )
           ],

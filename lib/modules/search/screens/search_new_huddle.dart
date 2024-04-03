@@ -121,7 +121,8 @@ class _SearchNewHuddleState extends State<SearchNewHuddle> {
               ),
             ),
             Visibility(
-              visible: filteredHuddleList.isEmpty,
+              visible: filteredHuddleList.isEmpty &&
+                  _searchHuddleName.text.trim().isNotEmpty,
               child: Expanded(
                 child: Center(
                   child: Text(
